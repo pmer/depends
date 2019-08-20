@@ -480,23 +480,18 @@ if not os.path.isfile('loads.zip'):
 
     print('Found', count, 'dependencies')
 
-    objdump_parsers = None
+z = zipfile.ZipFile('loads.zip')
 
+def read_dylibs(path):
+    try:
+        dylibs = str(z.read(path), encoding='utf-8')
+    except:
+        return []
 
-with zipfile.ZipFile('loads.zip') as z:
-    for object_file in object_files.values():
-        path = object_file.path
-
-        try:
-            dylibs = str(z.read(path), encoding='utf-8')
-        except:
-            continue
-
-        if dylibs == '':
-            dylibs = []
-        else:
-            dylibs = dylibs.split('\n')
-        object_files[path].dylibs = dylibs
+    if dylibs == '':
+        return []
+    else:
+        return dylibs.split('\n')
 
 
 def search(path, seen=set(), indent=0):
@@ -504,7 +499,7 @@ def search(path, seen=set(), indent=0):
         print('\t', end='')
     print(path)
     children_to_print = []
-    for child in sorted(object_files[path].dylibs):
+    for child in sorted(read_dylibs(path)):
         if child not in seen:
             seen.add(child)
             children_to_print.append(child)
